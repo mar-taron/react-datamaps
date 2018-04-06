@@ -15,14 +15,14 @@ class App extends React.Component {
 	render() {
 		return (
 			<div className="App">
-				<BasicExample />
+				{/*<BasicExample />
 				<ChoroplethExample />
 				<StateLabelsExample />
 				<BubblesExample />
 				<ArcsExample />
-				<ProjectionsGraticulesExample />
 				<ZoomExample />
-				<ResponsiveExample />
+				<ResponsiveExample />*/}
+				<ProjectionsGraticulesExample />
 			</div>
 		);
 	}
