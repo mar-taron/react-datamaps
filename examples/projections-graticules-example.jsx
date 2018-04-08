@@ -47,36 +47,6 @@ export default class ProjectionsGraticulesExample extends React.Component {
 						BLZ: { fillKey: 'pink' },
 						GRL: { fillKey: 'eq0' }
 					}}
-					bubbles={[
-						{
-							name: 'Bubble 1',
-							latitude: 21.32,
-							longitude: -7.32,
-							radius: 5,
-							fillKey: 'gt500'
-						},
-						{
-							name: 'Bubble 2',
-							latitude: 12.32,
-							longitude: 27.32,
-							radius: 5,
-							fillKey: 'eq0'
-						},
-						{
-							name: 'Bubble 3',
-							latitude: 0.32,
-							longitude: 23.32,
-							radius: 5,
-							fillKey: 'lt25'
-						},
-						{
-							name: 'Bubble 4',
-							latitude: -31.32,
-							longitude: 23.32,
-							radius: 3,
-							fillKey: 'eq50'
-						}
-					]}
 					graticule
 					arcOptions={{
 						greatArc: true,
