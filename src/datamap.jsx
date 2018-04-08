@@ -26,8 +26,19 @@ export default class Datamap extends React.Component {
 		responsive: PropTypes.bool,
 		style: PropTypes.object,
 		updateChoroplethOptions: PropTypes.object,
-		width: PropTypes.any
+		width: PropTypes.any,
+		style: PropTypes.object,
+		drag: PropTypes.bool,
+		center: PropTypes.array,
+        scale: PropTypes.number,
+        rotate: PropTypes.array
 	};
+
+    static defaultProps = {
+      center : [23, -3],
+      scale  : 200,
+      rotate : [23, -3],
+    };
 
 	constructor(props) {
 		super(props);
@@ -37,11 +48,11 @@ export default class Datamap extends React.Component {
         this.onMouseUp = this.onMouseUp.bind(this);
 
 		this.state = {
-			currentPositionX: 0,
-			currentPositionY: 0,
-			center: [23, -3],
-			scale: 200,
-			rotation: [23, -3]
+		    currentPositionX: 0,
+		    currentPositionY: 0,			
+		    center: this.props.center,
+		    scale: this.props.scale,
+		    rotate: this.props.rotate
 		};
 	}
 
@@ -51,7 +62,6 @@ export default class Datamap extends React.Component {
 			window.addEventListener('resize', this.resizeMap);
 		}
 		this.drawMap();
-		//this.update();
 	}
 
 	componentWillReceiveProps(newProps) {
@@ -70,38 +80,22 @@ export default class Datamap extends React.Component {
 		if (this.props.responsive) {
 			window.removeEventListener('resize', this.resizeMap);
 		}
-		clearInterval(this.interval);
-	}
-
-	update() {        
-		this.interval = setInterval(() => {
-            this.setState(prevState => {
-		     return {
-		     	...this.state,
-		     	rotation: [prevState.rotation[0] + this.props.rotationAngleX, prevState.rotation[1] + this.props.rotationAngleY]
-		     }
-			});
-			this.reDrawMap();
-		}, 1000);
 	}
 
 	clear() {
-		const { container } = this.refs;
-
-		for (const child of Array.from(container.childNodes)) {
-			container.removeChild(child);
+		for (const child of Array.from(this.container.childNodes)) {
+			this.container.removeChild(child);
 		}
 
 		delete this.map;
 	}
 
-	 setProjection = (element) => {
-	 	let self = this;
-		const projection = d3.geo.orthographic()
+	setProjection = (element) => {
+		const projection = d3.geo[this.props.projection]()
 			.center(this.state.center)
-			.rotate(this.state.rotation)
-			.scale(this.state.scale);
-		const path = d3.geo.path()
+			.rotate(this.state.rotate)
+			.scale(this.state.scale),
+		      path = d3.geo.path()
 			.projection(projection);
 
 		return { path, projection };
@@ -126,7 +120,7 @@ export default class Datamap extends React.Component {
 				...props,
 				data,
 				setProjection: this.setProjection,
-				element: this.refs.container
+				element: this.container
 			});
 		} else {
 			map.updateChoropleth(data, updateChoroplethOptions);
@@ -158,43 +152,28 @@ export default class Datamap extends React.Component {
 		this.map.resize();
 	}
 
-	mouseMoveMap(){
-		document.getElementById('map').addEventListener("mousedown", function(){
-			 console.log(e.clientX, e.clientY);
-	        isDown = true;
-	    })
-	    .addEventListener("mousemove", function(e){
-	        if(isDown) {
-	            console.log(e.clientX, e.clientY);
-	        }
-	     })
-	    .addEventListener("mouseup", function(){
-
-	        isDown = false;
-	    });     
-	}
-
-
 
     onMove(e) {
-      //  const x = Math.trunc((e.pageX - this.state.relX) / this.gridX) * this.gridX;
-        //const y = Math.trunc((e.pageY - this.state.relY) / this.gridY) * this.gridY;
-        console.log(e.pageX +'-'+this.state.currentPositionX, e.pageY +'-'+ this.state.currentPositionY);
-
         this.setState(prevState => {
 		     return {
 		     	...this.state,
 		     	currentPositionX: e.clientX,
 			    currentPositionY: e.clientY,
-		     	rotation: [prevState.rotation[0] + (e.clientX - prevState.currentPositionX), prevState.rotation[1] + ( prevState.currentPositionY - e.clientY )]
+		     	rotate: [
+		     	   prevState.rotate[0] + this.getRotationStep(e.clientX, prevState.currentPositionX),
+		     	   prevState.rotate[1] + this.getRotationStep(prevState.currentPositionY, e.clientY)
+		     	]   
 		     }
-			});   
+		});   
 		this.reDrawMap();	  
     }
 
-    onMouseDown(e) {
-        document.addEventListener('mousemove', this.onMouseMove);
-        document.addEventListener('mouseup', this.onMouseUp);
+    onMouseDown = (e) => {
+        if (!this.props.drag) {
+    	    return;
+    	}
+        this.container.addEventListener('mousemove', this.onMouseMove);
+        this.container.addEventListener('mouseup', this.onMouseUp);
         this.setState({
         	...this.state,
             currentPositionX: e.clientX,
@@ -203,16 +182,19 @@ export default class Datamap extends React.Component {
         e.preventDefault();
     }
 
-    onMouseUp(e) {
-        document.removeEventListener('mousemove', this.onMouseMove);
-        document.removeEventListener('mouseup', this.onMouseUp);
-        //this.props.onStop && this.props.onStop(this.state.x, this.state.y);
+    onMouseUp = (e) =>  {
+        this.container.removeEventListener('mousemove', this.onMouseMove);
+        this.container.removeEventListener('mouseup', this.onMouseUp);
         e.preventDefault();
     }
 
-    onMouseMove(e) {
+    onMouseMove = (e) =>  {
         this.onMove(e);
         e.preventDefault();
+    }
+
+    getRotationStep(prev, next){
+        return (prev - next) / 10 ;
     }
 
 	render() {
@@ -223,7 +205,7 @@ export default class Datamap extends React.Component {
 			...this.props.style
 		};
 
-		return <div ref="container" onMouseDown={this.onMouseDown} id="map" style={style} />;
+		return <div ref={container => this.container = container} onMouseDown={this.onMouseDown} style={style} />;
 	}
 
 }
