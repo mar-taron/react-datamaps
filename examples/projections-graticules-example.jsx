@@ -8,19 +8,6 @@ import Example from './example';
 const colors = d3.scale.category10();
 
 export default class ProjectionsGraticulesExample extends React.Component {
-    // setProjection(element) {
-	   //  const projection = d3.geo.orthographic();
-	   //  projection.scale((600 + 1) / 2 / Math.PI)
-	   //  projection.scale(250).clipAngle(90).rotate([90, 0]);
-	   //  // TODO: Rotate 90 should be binded to mouse move. each x+1 mouse move should change rotation x with 0.1;
-	   //  // Basicly, set a rotation object in the state and on mouse move update it, use the state parameter inside this function. Should work.
-	   //  projection.translate([600 / 2, 600 / 1.8]);
-	   //  const path = d3.geo.path()
-	   //    .projection(projection);
-	   //  return { path, projection };
-    // }
-
-
 
   	render() {
 		return (
@@ -36,9 +23,7 @@ export default class ProjectionsGraticulesExample extends React.Component {
 					}}
 					scope="world"
 					projection="orthographic"
-					rotate={true}
-					rotationAngleX={10}
-					rotationAngleY={0}
+					drag={true}
 					fills={{
 						defaultFill: '#abdda4',
 						gt50: colors(Math.random() * 20),
