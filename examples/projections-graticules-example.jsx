@@ -24,6 +24,7 @@ export default class ProjectionsGraticulesExample extends React.Component {
 					scope="world"
 					projection="orthographic"
 					drag={true}
+					zoom={true}
 					fills={{
 						defaultFill: '#abdda4',
 						gt50: colors(Math.random() * 20),
